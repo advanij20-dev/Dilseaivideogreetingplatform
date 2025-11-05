@@ -1,7 +1,7 @@
 import { Upload, Camera, Image, Sparkles } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 interface UploadPhotoStepProps {
   onPhotoUploaded: (file: File) => void;
@@ -9,12 +9,26 @@ interface UploadPhotoStepProps {
 
 export function UploadPhotoStep({ onPhotoUploaded }: UploadPhotoStepProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("File input changed:", e.target.files);
     const file = e.target.files?.[0];
     if (file) {
+      console.log("File selected:", file.name, file.type);
       onPhotoUploaded(file);
     }
+  };
+
+  const handleGalleryClick = () => {
+    console.log("Gallery button clicked");
+    fileInputRef.current?.click();
+  };
+
+  const handleCameraClick = () => {
+    console.log("Camera button clicked");
+    cameraInputRef.current?.click();
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -76,34 +90,41 @@ export function UploadPhotoStep({ onPhotoUploaded }: UploadPhotoStepProps) {
           </p>
 
           <input
+            ref={fileInputRef}
             type="file"
-            id="photo-upload"
             accept="image/*"
             onChange={handleFileChange}
             className="hidden"
+            aria-label="Upload photo from gallery"
           />
 
-          <Button asChild className="bg-gradient-to-r from-[#FF6B35] to-[#6B46C1] hover:from-[#ff5722] hover:to-[#5a3aa0] w-full h-14 rounded-full mb-3 shadow-lg transition-transform hover:scale-105">
-            <label htmlFor="photo-upload" className="cursor-pointer">
-              <Image className="w-5 h-5 mr-2" />
-              Choose from Gallery
-            </label>
+          <Button
+            onClick={handleGalleryClick}
+            type="button"
+            className="bg-gradient-to-r from-[#FF6B35] to-[#6B46C1] hover:from-[#ff5722] hover:to-[#5a3aa0] w-full h-14 rounded-full mb-3 shadow-lg transition-transform hover:scale-105"
+          >
+            <Image className="w-5 h-5 mr-2" />
+            Choose from Gallery
           </Button>
 
           <input
+            ref={cameraInputRef}
             type="file"
-            id="camera-upload"
             accept="image/*"
             capture="environment"
             onChange={handleFileChange}
             className="hidden"
+            aria-label="Take photo with camera"
           />
 
-          <Button asChild variant="outline" className="w-full h-14 rounded-full border-2 hover:bg-gray-50 transition-transform hover:scale-105">
-            <label htmlFor="camera-upload" className="cursor-pointer">
-              <Camera className="w-5 h-5 mr-2" />
-              Take Photo
-            </label>
+          <Button
+            onClick={handleCameraClick}
+            type="button"
+            variant="outline"
+            className="w-full h-14 rounded-full border-2 hover:bg-gray-50 transition-transform hover:scale-105"
+          >
+            <Camera className="w-5 h-5 mr-2" />
+            Take Photo
           </Button>
         </div>
       </Card>
