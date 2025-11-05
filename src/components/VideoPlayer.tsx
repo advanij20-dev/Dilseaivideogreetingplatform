@@ -1,17 +1,67 @@
-import { useRef, useState } from "react";
-import { Play, Pause, Volume2, VolumeX, Maximize } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { Play, Pause, Volume2, VolumeX, Maximize, Music } from "lucide-react";
 import { Button } from "./ui/button";
+import { Howl } from 'howler';
+import type { EmotionType } from "./ChooseEmotionStep";
 
 interface VideoPlayerProps {
   videoUrl: string;
   autoPlay?: boolean;
+  emotion?: EmotionType;
 }
 
-export function VideoPlayer({ videoUrl, autoPlay = true }: VideoPlayerProps) {
+// Background music for each emotion
+const emotionMusicUrls: Record<EmotionType, string> = {
+  heartfelt: 'https://assets.mixkit.co/active_storage/sfx/2490/2490-preview.mp3',
+  funny: 'https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3',
+  elegant: 'https://assets.mixkit.co/active_storage/sfx/2487/2487-preview.mp3',
+  cinematic: 'https://assets.mixkit.co/active_storage/sfx/2494/2494-preview.mp3',
+  traditional: 'https://assets.mixkit.co/active_storage/sfx/2489/2489-preview.mp3',
+};
+
+export function VideoPlayer({ videoUrl, autoPlay = true, emotion }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<Howl | null>(null);
   const [isPlaying, setIsPlaying] = useState(autoPlay);
   const [isMuted, setIsMuted] = useState(false);
+  const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [progress, setProgress] = useState(0);
+
+  // Initialize background music
+  useEffect(() => {
+    if (emotion && isMusicEnabled) {
+      audioRef.current = new Howl({
+        src: [emotionMusicUrls[emotion]],
+        loop: true,
+        volume: 0.3,
+        autoplay: false,
+      });
+
+      // Play music if video autoplays
+      if (autoPlay) {
+        audioRef.current?.play();
+      }
+    }
+
+    return () => {
+      // Cleanup audio on unmount
+      if (audioRef.current) {
+        audioRef.current.stop();
+        audioRef.current.unload();
+      }
+    };
+  }, [emotion, isMusicEnabled]);
+
+  // Sync music with video playback
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isPlaying && isMusicEnabled && !isMuted) {
+        audioRef.current.play();
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isPlaying, isMusicEnabled, isMuted]);
 
   const togglePlay = () => {
     if (videoRef.current) {
@@ -28,6 +78,26 @@ export function VideoPlayer({ videoUrl, autoPlay = true }: VideoPlayerProps) {
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
+
+      // Also control background music
+      if (audioRef.current) {
+        if (!isMuted) {
+          audioRef.current.pause();
+        } else if (isPlaying && isMusicEnabled) {
+          audioRef.current.play();
+        }
+      }
+    }
+  };
+
+  const toggleMusic = () => {
+    setIsMusicEnabled(!isMusicEnabled);
+    if (audioRef.current) {
+      if (isMusicEnabled) {
+        audioRef.current.stop();
+      } else if (isPlaying && !isMuted) {
+        audioRef.current.play();
+      }
     }
   };
 
@@ -114,6 +184,20 @@ export function VideoPlayer({ videoUrl, autoPlay = true }: VideoPlayerProps) {
           </Button>
 
           <div className="flex gap-2">
+            {emotion && (
+              <Button
+                size="icon"
+                variant="ghost"
+                className={`h-10 w-10 text-white hover:bg-white/20 ${
+                  isMusicEnabled ? 'bg-white/10' : ''
+                }`}
+                onClick={toggleMusic}
+                title={isMusicEnabled ? 'Disable background music' : 'Enable background music'}
+              >
+                <Music className={`w-5 h-5 ${isMusicEnabled ? 'text-yellow-400' : ''}`} />
+              </Button>
+            )}
+
             <Button
               size="icon"
               variant="ghost"

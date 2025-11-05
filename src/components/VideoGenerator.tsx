@@ -159,72 +159,172 @@ export function VideoGenerator({
 
     switch (animation) {
       case "hearts":
-        for (let i = 0; i < 10; i++) {
-          const x = (canvas.width / 10) * i + Math.sin(progress * 10 + i) * 50;
-          const y = canvas.height - progress * canvas.height * 1.2 + i * 100;
-          const size = 30 + Math.sin(progress * 5 + i) * 10;
+        // Floating hearts with varying sizes and opacity
+        for (let i = 0; i < 15; i++) {
+          const delay = i * 0.05;
+          const adjustedProgress = Math.max(0, progress - delay);
+          const x = (canvas.width / 15) * i + Math.sin(adjustedProgress * 8 + i) * 60;
+          const y = canvas.height - adjustedProgress * canvas.height * 1.3 + (i % 3) * 150;
+          const size = 25 + Math.sin(adjustedProgress * 5 + i) * 15;
+          const opacity = Math.max(0, 1 - adjustedProgress) * (0.6 + Math.sin(i) * 0.2);
+          ctx.globalAlpha = opacity;
+          drawHeart(ctx, x, y, size);
+        }
+        // Add some larger background hearts
+        for (let i = 0; i < 5; i++) {
+          const x = (canvas.width / 5) * i;
+          const y = canvas.height * 0.3 + Math.sin(progress * 3 + i) * 100;
+          const size = 40 + Math.sin(progress * 4 + i) * 20;
+          ctx.globalAlpha = 0.15;
           drawHeart(ctx, x, y, size);
         }
         break;
 
       case "bounce":
-        for (let i = 0; i < 8; i++) {
-          const x = (canvas.width / 8) * i;
-          const y =
-            canvas.height * 0.2 +
-            Math.abs(Math.sin(progress * 10 + i * 0.5)) * 100;
-          ctx.font = "60px Arial";
-          ctx.fillText(["🎉", "😄", "🎈", "⭐"][i % 4], x, y);
+        // Bouncing emojis with more variety
+        const emojis = ["🎉", "😄", "🎈", "⭐", "🎊", "✨", "🎁", "🌟"];
+        for (let i = 0; i < 12; i++) {
+          const x = (canvas.width / 12) * i + Math.sin(progress * 5 + i) * 40;
+          const bounceHeight = Math.abs(Math.sin(progress * 15 + i * 0.7)) * 150;
+          const y = canvas.height * 0.3 + bounceHeight;
+          const rotation = Math.sin(progress * 10 + i) * 0.3;
+          const scale = 0.8 + Math.sin(progress * 8 + i) * 0.3;
+
+          ctx.save();
+          ctx.translate(x, y);
+          ctx.rotate(rotation);
+          ctx.scale(scale, scale);
+          ctx.font = "70px Arial";
+          ctx.fillText(emojis[i % emojis.length], 0, 0);
+          ctx.restore();
         }
         break;
 
       case "sparkles":
-        for (let i = 0; i < 20; i++) {
-          const x = Math.random() * canvas.width;
-          const y = Math.random() * canvas.height;
-          const size = 5 + Math.random() * 10;
-          const opacity = Math.sin(progress * 20 + i) * 0.5 + 0.5;
-          ctx.globalAlpha = opacity;
+        // Enhanced sparkle effects with different layers
+        // Background sparkles (slow moving)
+        for (let i = 0; i < 30; i++) {
+          const angle = (i / 30) * Math.PI * 2 + progress * 2;
+          const radius = 200 + Math.sin(progress * 5 + i) * 100;
+          const x = canvas.width / 2 + Math.cos(angle) * radius;
+          const y = canvas.height / 2 + Math.sin(angle) * radius;
+          const size = 3 + Math.sin(progress * 10 + i) * 3;
+          const opacity = Math.sin(progress * 15 + i) * 0.5 + 0.5;
+
+          ctx.globalAlpha = opacity * 0.6;
           ctx.fillStyle = "#FFD700";
-          ctx.beginPath();
-          ctx.arc(x, y, size, 0, Math.PI * 2);
-          ctx.fill();
+
+          // Draw star shape
+          drawStar(ctx, x, y, 5, size * 2, size);
+        }
+        // Foreground sparkles (fast twinkling)
+        for (let i = 0; i < 20; i++) {
+          const x = (Math.sin(i * 13.7) * 0.5 + 0.5) * canvas.width;
+          const y = (Math.cos(i * 17.3) * 0.5 + 0.5) * canvas.height;
+          const size = 4 + Math.random() * 8;
+          const opacity = Math.abs(Math.sin(progress * 25 + i * 3.7));
+
+          ctx.globalAlpha = opacity;
+          ctx.fillStyle = i % 2 === 0 ? "#FFD700" : "#FFFFFF";
+          drawStar(ctx, x, y, 4, size * 2.5, size);
         }
         break;
 
       case "flare":
-        ctx.globalAlpha = 0.3;
-        ctx.fillStyle = "#FFD700";
+        // Enhanced cinematic lens flare
         const flareX = canvas.width * progress;
-        const flareGradient = ctx.createRadialGradient(
-          flareX,
-          canvas.height / 2,
-          0,
-          flareX,
-          canvas.height / 2,
-          300
-        );
-        flareGradient.addColorStop(0, "rgba(255, 215, 0, 0.8)");
-        flareGradient.addColorStop(1, "rgba(255, 215, 0, 0)");
-        ctx.fillStyle = flareGradient;
+        const flareY = canvas.height / 2 + Math.sin(progress * Math.PI) * 100;
+
+        // Main flare
+        const mainFlare = ctx.createRadialGradient(flareX, flareY, 0, flareX, flareY, 400);
+        mainFlare.addColorStop(0, "rgba(255, 215, 0, 0.6)");
+        mainFlare.addColorStop(0.3, "rgba(255, 165, 0, 0.3)");
+        mainFlare.addColorStop(1, "rgba(255, 215, 0, 0)");
+        ctx.fillStyle = mainFlare;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Secondary flares
+        for (let i = 0; i < 5; i++) {
+          const offsetX = flareX - (flareX - canvas.width / 2) * (i * 0.3);
+          const offsetY = flareY - (flareY - canvas.height / 2) * (i * 0.3);
+          const size = 150 - i * 20;
+
+          const secondaryFlare = ctx.createRadialGradient(offsetX, offsetY, 0, offsetX, offsetY, size);
+          secondaryFlare.addColorStop(0, `rgba(255, 255, 255, ${0.2 - i * 0.03})`);
+          secondaryFlare.addColorStop(1, "rgba(255, 215, 0, 0)");
+          ctx.fillStyle = secondaryFlare;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
         break;
 
       case "diya":
-        for (let i = 0; i < 5; i++) {
-          const x = (canvas.width / 6) * (i + 1);
-          const y = canvas.height * 0.9;
-          const flicker = Math.sin(progress * 30 + i) * 5;
-          ctx.font = "80px Arial";
+        // Traditional diya lamps with enhanced glow
+        for (let i = 0; i < 6; i++) {
+          const x = (canvas.width / 7) * (i + 1);
+          const baseY = canvas.height * 0.88;
+          const flicker = Math.sin(progress * 40 + i * 2.3) * 8;
+          const y = baseY + flicker;
+
+          // Glow effect
+          const glowGradient = ctx.createRadialGradient(x, y - 30, 0, x, y - 30, 80);
+          glowGradient.addColorStop(0, "rgba(255, 165, 0, 0.4)");
+          glowGradient.addColorStop(1, "rgba(255, 165, 0, 0)");
+          ctx.fillStyle = glowGradient;
+          ctx.fillRect(x - 80, y - 110, 160, 160);
+
+          // Diya emoji
+          ctx.font = "90px Arial";
           ctx.save();
-          ctx.translate(x, y + flicker);
-          ctx.fillText("🪔", 0, 0);
+          ctx.translate(x, y);
+          ctx.rotate(Math.sin(progress * 30 + i) * 0.05);
+          ctx.fillText("🪔", -45, 0);
           ctx.restore();
+
+          // Floating particles
+          for (let j = 0; j < 3; j++) {
+            const particleProgress = (progress * 2 + i * 0.1 + j * 0.3) % 1;
+            const particleX = x + Math.sin(particleProgress * 10) * 30;
+            const particleY = y - particleProgress * 200;
+            const particleSize = (1 - particleProgress) * 4;
+            const particleOpacity = (1 - particleProgress) * 0.8;
+
+            ctx.globalAlpha = particleOpacity;
+            ctx.fillStyle = "#FFD700";
+            ctx.beginPath();
+            ctx.arc(particleX, particleY, particleSize, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
         break;
     }
 
     ctx.restore();
+  };
+
+  const drawStar = (
+    ctx: CanvasRenderingContext2D,
+    cx: number,
+    cy: number,
+    spikes: number,
+    outerRadius: number,
+    innerRadius: number
+  ) => {
+    let rot = (Math.PI / 2) * 3;
+    const step = Math.PI / spikes;
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - outerRadius);
+
+    for (let i = 0; i < spikes; i++) {
+      ctx.lineTo(cx + Math.cos(rot) * outerRadius, cy + Math.sin(rot) * outerRadius);
+      rot += step;
+      ctx.lineTo(cx + Math.cos(rot) * innerRadius, cy + Math.sin(rot) * innerRadius);
+      rot += step;
+    }
+
+    ctx.lineTo(cx, cy - outerRadius);
+    ctx.closePath();
+    ctx.fill();
   };
 
   const drawHeart = (

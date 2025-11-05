@@ -200,7 +200,7 @@ export function GenerateShareStep({
         {/* Video Player */}
         <div className="mb-6 flex justify-center">
           <div className="w-full max-w-sm">
-            {videoUrl && <VideoPlayer videoUrl={videoUrl} autoPlay={true} />}
+            {videoUrl && <VideoPlayer videoUrl={videoUrl} autoPlay={true} emotion={emotion} />}
           </div>
         </div>
 
