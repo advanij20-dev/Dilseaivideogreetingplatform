@@ -82,28 +82,29 @@ export function UploadPhotoStep({ onPhotoUploaded }: UploadPhotoStepProps) {
             onChange={handleFileChange}
             className="hidden"
           />
-          
-          <label htmlFor="photo-upload">
-            <Button className="bg-gradient-to-r from-[#FF6B35] to-[#6B46C1] hover:from-[#ff5722] hover:to-[#5a3aa0] w-full h-14 rounded-full mb-3 shadow-lg transition-transform hover:scale-105">
+
+          <Button asChild className="bg-gradient-to-r from-[#FF6B35] to-[#6B46C1] hover:from-[#ff5722] hover:to-[#5a3aa0] w-full h-14 rounded-full mb-3 shadow-lg transition-transform hover:scale-105">
+            <label htmlFor="photo-upload" className="cursor-pointer">
               <Image className="w-5 h-5 mr-2" />
               Choose from Gallery
-            </Button>
-          </label>
+            </label>
+          </Button>
 
-          <label htmlFor="camera-upload">
-            <input
-              type="file"
-              id="camera-upload"
-              accept="image/*"
-              capture="environment"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-            <Button variant="outline" className="w-full h-14 rounded-full border-2 hover:bg-gray-50 transition-transform hover:scale-105">
+          <input
+            type="file"
+            id="camera-upload"
+            accept="image/*"
+            capture="environment"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
+          <Button asChild variant="outline" className="w-full h-14 rounded-full border-2 hover:bg-gray-50 transition-transform hover:scale-105">
+            <label htmlFor="camera-upload" className="cursor-pointer">
               <Camera className="w-5 h-5 mr-2" />
               Take Photo
-            </Button>
-          </label>
+            </label>
+          </Button>
         </div>
       </Card>
 
