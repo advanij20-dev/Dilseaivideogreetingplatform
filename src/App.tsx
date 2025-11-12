@@ -1,89 +1,85 @@
 import { useState } from "react";
-import { UploadPhotoStep } from "./components/UploadPhotoStep";
-import { ChooseEmotionStep } from "./components/ChooseEmotionStep";
-import { ChooseOccasionStep } from "./components/ChooseOccasionStep";
+import { MainUploadScreen } from "./components/MainUploadScreen";
 import { GenerateShareStep } from "./components/GenerateShareStep";
 import type { EmotionType } from "./components/ChooseEmotionStep";
 import type { OccasionType } from "./components/ChooseOccasionStep";
 import { Toaster } from "./components/ui/sonner";
 
-type Step = "upload" | "emotion" | "occasion" | "generate";
+type Step = "main" | "generate";
 
 export default function App() {
-  const [currentStep, setCurrentStep] = useState<Step>("upload");
+  const [currentStep, setCurrentStep] = useState<Step>("main");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>("");
-  const [selectedEmotion, setSelectedEmotion] = useState<EmotionType | null>(null);
+  const [selectedEmotion, setSelectedEmotion] = useState<EmotionType>("heartfelt"); // Default emotion
   const [selectedOccasion, setSelectedOccasion] = useState<OccasionType | null>(null);
   const [recipientName, setRecipientName] = useState("");
+  const [userRequest, setUserRequest] = useState("");
 
   const handlePhotoUploaded = (file: File) => {
     setUploadedFile(file);
     const imageUrl = URL.createObjectURL(file);
     setUploadedImageUrl(imageUrl);
-    setCurrentStep("emotion");
   };
 
-  const handleEmotionNext = () => {
-    if (selectedEmotion) {
-      setCurrentStep("occasion");
-    }
-  };
+  const handleGenerate = (data: {
+    userRequest: string;
+    selectedTemplate: OccasionType | null;
+    recipientName: string;
+  }) => {
+    setUserRequest(data.userRequest);
+    setSelectedOccasion(data.selectedTemplate);
+    setRecipientName(data.recipientName);
 
-  const handleOccasionNext = () => {
-    if (selectedOccasion) {
-      setCurrentStep("generate");
+    // Auto-determine emotion based on occasion or default to heartfelt
+    if (data.selectedTemplate) {
+      const emotionMap: Record<OccasionType, EmotionType> = {
+        birthday: "funny",
+        diwali: "traditional",
+        anniversary: "heartfelt",
+        wedding: "elegant",
+        newyear: "cinematic",
+        justlove: "heartfelt",
+      };
+      setSelectedEmotion(emotionMap[data.selectedTemplate] || "heartfelt");
     }
+
+    setCurrentStep("generate");
   };
 
   const handleCreateAnother = () => {
     // Reset all state
-    setCurrentStep("upload");
+    setCurrentStep("main");
     setUploadedFile(null);
     setUploadedImageUrl("");
-    setSelectedEmotion(null);
+    setSelectedEmotion("heartfelt");
     setSelectedOccasion(null);
     setRecipientName("");
+    setUserRequest("");
   };
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
-        {currentStep === "upload" && (
-          <UploadPhotoStep onPhotoUploaded={handlePhotoUploaded} />
-        )}
+      {currentStep === "main" && (
+        <MainUploadScreen
+          uploadedImageUrl={uploadedImageUrl}
+          onPhotoUploaded={handlePhotoUploaded}
+          onGenerate={handleGenerate}
+        />
+      )}
 
-        {currentStep === "emotion" && uploadedImageUrl && (
-          <ChooseEmotionStep
-            selectedEmotion={selectedEmotion}
-            onEmotionSelected={setSelectedEmotion}
-            onNext={handleEmotionNext}
-            onBack={() => setCurrentStep("upload")}
-            uploadedImage={uploadedImageUrl}
-          />
-        )}
-
-        {currentStep === "occasion" && (
-          <ChooseOccasionStep
-            selectedOccasion={selectedOccasion}
-            onOccasionSelected={setSelectedOccasion}
-            recipientName={recipientName}
-            onRecipientNameChange={setRecipientName}
-            onNext={handleOccasionNext}
-            onBack={() => setCurrentStep("emotion")}
-          />
-        )}
-
-        {currentStep === "generate" && uploadedImageUrl && selectedEmotion && selectedOccasion && (
+      {currentStep === "generate" && uploadedImageUrl && selectedEmotion && (
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
           <GenerateShareStep
             uploadedImage={uploadedImageUrl}
             emotion={selectedEmotion}
-            occasion={selectedOccasion}
+            occasion={selectedOccasion || "justlove"}
             recipientName={recipientName}
             onCreateAnother={handleCreateAnother}
           />
-        )}
-      </div>
+        </div>
+      )}
+
       <Toaster position="top-center" richColors />
     </>
   );
