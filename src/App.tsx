@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { MainUploadScreen } from "./components/MainUploadScreen";
 import { GenerateShareStep } from "./components/GenerateShareStep";
-import type { EmotionType } from "./components/ChooseEmotionStep";
-import type { OccasionType } from "./components/ChooseOccasionStep";
 import { Toaster } from "./components/ui/sonner";
 
+// Define types locally instead of importing from old components
+type EmotionType = "heartfelt" | "funny" | "elegant" | "cinematic" | "traditional";
+type OccasionType = "birthday" | "diwali" | "anniversary" | "wedding" | "newyear" | "justlove";
 type Step = "main" | "generate";
 
 export default function App() {
   const [currentStep, setCurrentStep] = useState<Step>("main");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>("");
-  const [selectedEmotion, setSelectedEmotion] = useState<EmotionType>("heartfelt"); // Default emotion
+  const [selectedEmotion, setSelectedEmotion] = useState<EmotionType>("heartfelt");
   const [selectedOccasion, setSelectedOccasion] = useState<OccasionType | null>(null);
   const [recipientName, setRecipientName] = useState("");
   const [userRequest, setUserRequest] = useState("");
@@ -31,7 +32,7 @@ export default function App() {
     setSelectedOccasion(data.selectedTemplate);
     setRecipientName(data.recipientName);
 
-    // Auto-determine emotion based on occasion or default to heartfelt
+    // Auto-determine emotion based on occasion
     if (data.selectedTemplate) {
       const emotionMap: Record<OccasionType, EmotionType> = {
         birthday: "funny",
@@ -48,7 +49,6 @@ export default function App() {
   };
 
   const handleCreateAnother = () => {
-    // Reset all state
     setCurrentStep("main");
     setUploadedFile(null);
     setUploadedImageUrl("");
