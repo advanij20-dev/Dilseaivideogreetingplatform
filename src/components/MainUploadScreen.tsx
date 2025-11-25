@@ -84,6 +84,9 @@ export const MainUploadScreen: React.FC<MainUploadScreenProps> = ({
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
+        <div className="bg-green-600 text-white text-center py-2 font-bold text-lg">
+          ✨ NEW 2-STEP DESIGN ✨
+        </div>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
