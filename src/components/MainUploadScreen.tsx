@@ -29,6 +29,8 @@ export const MainUploadScreen: React.FC<MainUploadScreenProps> = ({
   onPhotoUploaded,
   onGenerate,
 }) => {
+  console.log("🎉 NEW 2-STEP DESIGN IS LOADING! 🎉");
+
   const [isDragging, setIsDragging] = useState(false);
   const [userRequest, setUserRequest] = useState("");
   const [selectedTemplate, setSelectedTemplate] =
